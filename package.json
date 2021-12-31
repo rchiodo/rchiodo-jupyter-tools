@@ -1,6 +1,6 @@
 {
 	"name": "rchiodo-jupyter-tools",
-	"displayName": "rchiodo-jupyter-tools",
+	"displayName": "Jupyter Extras",
 	"description": "Extra tools for developing notebooks in VS code",
 	"version": "0.0.1",
 	"engines": {
@@ -8,6 +8,14 @@
 	},
     "license": "MIT",
     "icon": "icon.png",
+    "homepage": "https://github.com/rchjodo/rchiodo-jupyter-tools",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/rchjodo/rchiodo-jupyter-tools"
+    },
+    "bugs": {
+        "url": "https://github.com/rchjodo/rchiodo-jupyter-tools/issues"
+    },
     "galleryBanner": {
         "color": "#ffffff",
         "theme": "light"
