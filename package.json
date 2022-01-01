@@ -1,11 +1,11 @@
 {
-	"name": "rchiodo-jupyter-tools",
-	"displayName": "Jupyter Extras",
-	"description": "Extra tools for developing notebooks in VS code",
-	"version": "0.0.1",
-	"engines": {
-		"vscode": "^1.63.0-insiders"
-	},
+    "name": "rchiodo-jupyter-tools",
+    "displayName": "Jupyter Extras",
+    "description": "Extra tools for developing notebooks in VS code",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.63.0-insiders"
+    },
     "license": "MIT",
     "icon": "icon.png",
     "homepage": "https://github.com/rchjodo/rchiodo-jupyter-tools",
@@ -28,6 +28,21 @@
         "multi-root ready",
         "python"
     ],
+    "enabledApiProposals": [
+        "notebookConcatTextDocument",
+        "notebookControllerKind",
+        "notebookDebugOptions",
+        "notebookDeprecated",
+        "notebookEditor",
+        "notebookEditorDecorationType",
+        "notebookEditorEdit",
+        "notebookMessaging",
+        "notebookMime",
+        "notebookCellExecutionState",
+        "portsAttributes",
+        "textDocumentNotebook",
+        "quickPickSortByLabel"
+    ],
     "categories": [
         "Programming Languages",
         "Other",
@@ -37,43 +52,43 @@
         "Notebooks",
         "Visualization"
     ],
-	"activationEvents": [
-		"onCommand:jupyter.notebookeditor.openInInteractive",
-		"onCommand::jupyter.notebookeditor.openContextualHelp",
+    "activationEvents": [
+        "onCommand:jupyter.notebookeditor.openInInteractive",
+        "onCommand::jupyter.notebookeditor.openContextualHelp",
         "onNotebook:jupyter-notebook",
         "onNotebook:interactive"
-	],
-	"main": "./dist/extension.js",
-	"contributes": {
-		"commands": [
-			{
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
                 "command": "jupyter.notebookeditor.openInInteractive",
                 "title": "%jupyter.command.jupyter.openInInteractive.title%",
                 "category": "Notebook",
-				"icon": "$(edit)",
+                "icon": "$(edit)",
                 "enablement": "notebookType == jupyter-notebook && isWorkspaceTrusted && jupyter.ispythonnotebook"
-			},
+            },
             {
                 "command": "jupyter.notebookeditor.openContextualHelp",
                 "title": "%jupyter.command.jupyter.openContextualHelp.title%",
                 "category": "Notebook",
                 "enablement": "notebookType == jupyter-notebook && isWorkspaceTrusted && jupyter.ispythonnotebook"
             }
-		],
-		"commandPalette": [
-			{
-				"command": "jupyter.notebookeditor.openInInteractive",
-				"title": "%jupyter.command.jupyter.openInInteractive.title%",
-				"category": "Notebook",
-				"when": "jupyter.ispythonnotebook && isWorkspaceTrusted"
-			},
+        ],
+        "commandPalette": [
+            {
+                "command": "jupyter.notebookeditor.openInInteractive",
+                "title": "%jupyter.command.jupyter.openInInteractive.title%",
+                "category": "Notebook",
+                "when": "jupyter.ispythonnotebook && isWorkspaceTrusted"
+            },
             {
                 "command": "jupyter.notebookeditor.openContextualHelp",
                 "title": "%jupyter.command.jupyter.openContextualHelp.title%",
                 "category": "Notebook",
                 "enablement": "isWorkspaceTrusted && jupyter.ispythonnotebook"
             }
-		],
+        ],
         "views": {
             "jupyter": [
                 {
@@ -83,32 +98,51 @@
                 }
             ]
         }
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run package",
-		"compile": "webpack",
-		"watch": "webpack --watch",
-		"package": "webpack --mode production --devtool hidden-source-map",
-		"compile-tests": "tsc -p . --outDir out",
-		"watch-tests": "tsc -p . -w --outDir out",
-		"pretest": "npm run compile-tests && npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/vscode": "^1.63.0",
-		"@types/glob": "^7.1.4",
-		"@types/mocha": "^9.0.0",
-		"@types/node": "14.x",
-		"@typescript-eslint/eslint-plugin": "^5.1.0",
-		"@typescript-eslint/parser": "^5.1.0",
-		"eslint": "^8.1.0",
-		"glob": "^7.1.7",
-		"mocha": "^9.1.3",
-		"typescript": "^4.4.4",
-		"ts-loader": "^9.2.5",
-		"webpack": "^5.52.1",
-		"webpack-cli": "^4.8.0",
-		"@vscode/test-electron": "^1.6.2"
-	}
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@nteract/transforms": "^5.0.4-alpha.0",
+        "@types/fs-extra": "^9.0.13",
+        "@types/glob": "^7.1.4",
+        "@types/loadable__component": "^5.13.4",
+        "@types/lodash": "^4.14.178",
+        "@types/mocha": "^9.0.0",
+        "@types/node": "14.x",
+        "@types/redux-logger": "^3.0.9",
+        "@types/vscode": "^1.63.0",
+        "@typescript-eslint/eslint-plugin": "^5.1.0",
+        "@typescript-eslint/parser": "^5.1.0",
+        "@vscode/test-electron": "^1.6.2",
+        "eslint": "^8.1.0",
+        "glob": "^7.2.0",
+        "mocha": "^9.1.3",
+        "ts-loader": "^9.2.5",
+        "typescript": "^4.4.4",
+        "webpack": "^5.52.1",
+        "webpack-cli": "^4.8.0"
+    },
+    "dependencies": {
+        "@jupyterlab/coreutils": "^5.2.5",
+        "@jupyterlab/nbformat": "^3.2.5",
+        "@jupyterlab/services": "^6.2.5",
+        "@loadable/component": "^5.15.2",
+        "ansi-regex": "^6.0.1",
+        "ansi-to-html": "^0.7.2",
+        "fs-extra": "^10.0.0",
+        "jsonc-parser": "^3.0.0",
+        "lodash": "^4.17.21",
+        "react": "^17.0.2",
+        "react-redux": "^7.2.6",
+        "redux-logger": "^3.0.6"
+    }
 }
