@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 'use strict';
-import { CssMessages } from '../../../../client/datascience/messages';
-import { IJupyterExtraSettings } from '../../../../client/datascience/types';
-import { getSelectedAndFocusedInfo, IMainState } from '../../../interactive-common/mainState';
-import { postActionToExtension } from '../../../interactive-common/redux/helpers';
-import { Helpers } from '../../../interactive-common/redux/reducers/helpers';
-import { ICellAction, ICellAndCursorAction } from '../../../interactive-common/redux/reducers/types';
-import { computeEditorOptions } from '../../../react-common/settingsReactSide';
+import { Helpers } from '../../../common/redux/reducers/helpers';
+import { ICellAction, ICellAndCursorAction } from '../../../common/redux/reducers/types';
+import { IMainState } from '../../../common/types';
+import { getSelectedAndFocusedInfo } from '../../../common/utils';
 import { NativeEditorReducerArg } from '../mapping';
 
 export namespace Effects {
@@ -208,41 +205,6 @@ export namespace Effects {
             };
         }
         return arg.prevState;
-    }
-
-    export function updateSettings(arg: NativeEditorReducerArg<string>): IMainState {
-        // String arg should be the IDataScienceExtraSettings
-        const newSettingsJSON = JSON.parse(arg.payload.data);
-        const newSettings = <IJupyterExtraSettings>newSettingsJSON;
-        const newEditorOptions = computeEditorOptions(newSettings);
-        const newFontFamily = newSettings.extraSettings
-            ? newSettings.extraSettings.editor.fontFamily
-            : arg.prevState.font.family;
-        const newFontSize = newSettings.extraSettings
-            ? newSettings.extraSettings.editor.fontSize
-            : arg.prevState.font.size;
-
-        // Ask for new theme data if necessary
-        if (
-            newSettings &&
-            newSettings.extraSettings &&
-            newSettings.extraSettings.theme !== arg.prevState.vscodeThemeName
-        ) {
-            const knownDark = Helpers.computeKnownDark(newSettings);
-            // User changed the current theme. Rerender
-            postActionToExtension(arg, CssMessages.GetCssRequest, { isDark: knownDark });
-            postActionToExtension(arg, CssMessages.GetMonacoThemeRequest, { isDark: knownDark });
-        }
-
-        return {
-            ...arg.prevState,
-            settings: newSettings,
-            editorOptions: { ...newEditorOptions, lineDecorationsWidth: 5 },
-            font: {
-                size: newFontSize,
-                family: newFontFamily
-            }
-        };
     }
 
     export function hideUI(arg: NativeEditorReducerArg<boolean>): IMainState {

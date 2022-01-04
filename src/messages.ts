@@ -108,6 +108,23 @@ export interface ILoadAllCells {
     isNotebookTrusted?: boolean;
 }
 
+export enum MessageType {
+    /**
+     * Action dispatched as result of some user action.
+     */
+    other = 0,
+    /**
+     * Action dispatched to re-broadcast a message across other editors of the same file in the same session.
+     */
+    syncAcrossSameNotebooks = 1 << 0,
+    /**
+     * Action dispatched to re-broadcast a message across other sessions (live share).
+     */
+    syncWithLiveShare = 1 << 1,
+    noIdea = 1 << 2
+}
+
+
 
 // Map all messages to specific payloads
 export class MessageMapping {

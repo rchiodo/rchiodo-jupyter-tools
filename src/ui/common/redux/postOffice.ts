@@ -2,13 +2,12 @@
 // Licensed under the MIT License.
 'use strict';
 import * as Redux from 'redux';
+import { MessageMapping } from '../../../messages';
+import { PostOffice } from '../postOffice';
 
-import { BaseReduxActionPayload } from '../../../client/datascience/interactive-common/types';
-import { PostOffice } from '../../react-common/postOffice';
 import { isAllowedAction, reBroadcastMessageIfRequired, unwrapPostableAction } from './helpers';
 import { CommonActionType } from './reducers/types';
-
-export const AllowedIPyWidgetMessages = [...Object.values(IPyWidgetMessages)];
+import { BaseReduxActionPayload } from './types';
 
 export function generatePostOfficeSendReducer(postOffice: PostOffice): Redux.Reducer<{}, Redux.AnyAction> {
     // eslint-disable-next-line
@@ -19,7 +18,7 @@ export function generatePostOfficeSendReducer(postOffice: PostOffice): Redux.Red
                 const { type, payload } = unwrapPostableAction(action.payload);
                 // Just post this to the post office.
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                postOffice.sendMessage<IInteractiveWindowMapping>(type, payload?.data as any);
+                postOffice.sendMessage<MessageMapping>(type, payload?.data as any);
             } else {
                 const payload: BaseReduxActionPayload<{}> | undefined = action.payload;
                 // Do not rebroadcast messages that have been sent through as part of a synchronization packet.

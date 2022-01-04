@@ -25,8 +25,6 @@ interface IContextualCellBaseProps {
 
     baseTheme: string;
     codeTheme: string;
-    testMode?: boolean;
-    maxTextSize?: number;
     enableScroll?: boolean;
     monacoTheme: string | undefined;
     lastCell: boolean;
@@ -126,11 +124,8 @@ export class ContextualCell extends React.Component<IContextualCellProps> {
                     <CellOutput
                         cellVM={this.props.cellVM}
                         baseTheme={this.props.baseTheme}
-                        expandImage={this.props.showPlot}
                         enableScroll={false}
                         themeMatplotlibPlots={false}
-                        widgetFailed={this.props.widgetFailed}
-                        openSettings={this.props.openSettings}
                     />
                 </div>
             );

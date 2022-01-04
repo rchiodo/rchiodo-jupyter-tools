@@ -1,19 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 'use strict';
-import * as fastDeepEqual from 'fast-deep-equal';
-import { getDefaultSettings } from 'http2';
 import * as path from 'path';
 import * as Redux from 'redux';
 import { createLogger } from 'redux-logger';
 import { Identifiers, EXTENSION_ROOT_DIR } from '../../../constants';
-import { CssMessages, WindowMessages } from '../../../messages';
+import { CssMessages, MessageType, WindowMessages } from '../../../messages';
 import { PostOffice } from '../postOffice';
-import { IMainState, CellState, ICellViewModel } from '../types';
+import { IMainState } from '../types';
 import { postActionToExtension, isAllowedAction, isAllowedMessage } from './helpers';
 import { generatePostOfficeSendReducer } from './postOffice';
-import { CommonActionType } from './reducers/types';
-import { IVariableState, generateVariableReducer } from './reducers/variables';
+import { combineReducers, createQueueableActionMiddleware, QueuableAction } from './reduxUtils';
+import { BaseReduxActionPayload } from './types';
 
 // Externally defined function to see if we need to force on test middleware
 export declare function forceTestMiddleware(): boolean;
@@ -49,7 +47,7 @@ function generateMainReducer<M>(
     reducerMap: M
 ): Redux.Reducer<IMainState, QueuableAction<M>> {
     // First create our default state.
-    const defaultState = generateDefaultState(skipDefault, testMode, baseTheme, editable);
+    const defaultState = generateDefaultState(baseTheme);
 
     // Then combine that with our map of state change message to reducer
     return combineReducers<IMainState, M>(defaultState, reducerMap);
@@ -82,7 +80,7 @@ function createTestMiddleware(transformLoad: () => Promise<void>): Redux.Middlew
         const sendMessage = (message: any, payload?: any) => {
             setTimeout(() => {
                 transformPromise
-                    .then(() => postActionToExtension({ queueAction: store.dispatch }, message, payload))
+                    .then(() => postActionToExtension({ queueAction: store.dispatch }, message, payload));
             });
         };
 
@@ -170,13 +168,7 @@ function createMiddleWare(
 
 export interface IStore {
     main: IMainState;
-    variables: IVariableState;
-    monaco: IMonacoState;
     post: {};
-}
-
-export interface IMainWithVariables extends IMainState {
-    variableState: IVariableState;
 }
 
 /**
@@ -195,38 +187,25 @@ const addMessageDirectionMiddleware: Redux.Middleware = (_store) => (next) => (a
 };
 
 export function createStore<M>(
-    skipDefault: boolean,
     baseTheme: string,
-    testMode: boolean,
-    editable: boolean,
-    showVariablesOnDebug: boolean,
-    variablesStartOpen: boolean,
     reducerMap: M,
     postOffice: PostOffice,
     transformLoad: () => Promise<void>
 ) {
     // Create reducer for the main react UI
-    const mainReducer = generateMainReducer(skipDefault, testMode, baseTheme, editable, reducerMap);
+    const mainReducer = generateMainReducer(baseTheme, reducerMap);
 
     // Create reducer to pass window messages to the other side
     const postOfficeReducer = generatePostOfficeSendReducer(postOffice);
 
-    // Create another reducer for handling monaco state
-    const monacoReducer = generateMonacoReducer(testMode, postOffice);
-
-    // Create another reducer for handling variable state
-    const variableReducer = generateVariableReducer(showVariablesOnDebug, variablesStartOpen);
-
     // Combine these together
     const rootReducer = Redux.combineReducers<IStore>({
         main: mainReducer,
-        variables: variableReducer,
-        monaco: monacoReducer,
         post: postOfficeReducer
     });
 
     // Create our middleware
-    const middleware = createMiddleWare(testMode, postOffice, transformLoad).concat([addMessageDirectionMiddleware]);
+    const middleware = createMiddleWare(false, postOffice, transformLoad).concat([addMessageDirectionMiddleware]);
 
     // Use this reducer and middle ware to create a store
     const store = Redux.createStore(rootReducer, Redux.applyMiddleware(...middleware));
@@ -239,7 +218,7 @@ export function createStore<M>(
             // Double check this is one of our messages. React will actually post messages here too during development
             if (isAllowedMessage(message)) {
                 const basePayload: BaseReduxActionPayload = { data: payload };
-                if (message === InteractiveWindowMessages.Sync) {
+                if (message === WindowMessages.Sync) {
                     // This is a message that has been sent from extension purely for synchronization purposes.
                     // Unwrap the message.
                     message = payload.type;

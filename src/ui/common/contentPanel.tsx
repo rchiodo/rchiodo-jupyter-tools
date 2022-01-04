@@ -12,7 +12,6 @@ const throttle = require('lodash/throttle') as typeof import('lodash/throttle');
 export interface IContentPanelProps {
     baseTheme: string;
     cellVMs: ICellViewModel[];
-    testMode?: boolean;
     codeTheme: string;
     submittedText: boolean;
     skipNextScroll: boolean;
@@ -81,7 +80,7 @@ export class ContentPanel extends React.Component<IContentPanelProps> {
     }
 
     private scrollToBottom() {
-        if (this.bottomRef.current && !this.props.skipNextScroll && !this.props.testMode && this.containerRef.current) {
+        if (this.bottomRef.current && !this.props.skipNextScroll && this.containerRef.current) {
             // Make sure to debounce this so it doesn't take up too much time.
             this.throttledScrollIntoView();
         }

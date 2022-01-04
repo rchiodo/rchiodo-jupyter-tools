@@ -1,7 +1,8 @@
 'use strict';
 
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
+import { Observable } from 'rxjs';
+import { Subject } from 'rxjs';
+import { WebviewMessage } from '../../types';
 
 export interface IVsCodeApi {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,10 +69,10 @@ class VsCodeMessageApi implements IMessageApi {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public sendMessage(type: string, payload?: any) {
         if (this.vscodeApi) {
-            logMessage(`UI PostOffice Sent ${type}`);
+            console.log(`UI PostOffice Sent ${type}`);
             this.vscodeApi.postMessage({ type: type, payload });
         } else {
-            logMessage(`No vscode API to post message ${type}`);
+            console.log(`No vscode API to post message ${type}`);
         }
     }
 
@@ -84,38 +85,6 @@ class VsCodeMessageApi implements IMessageApi {
 
     private async handleVSCodeApiMessages(ev: MessageEvent) {
         const msg = ev.data as WebviewMessage;
-        if (msg && this.messageCallback) {
-            await this.messageCallback(msg);
-        }
-    }
-}
-
-// Provides support for messaging when hosted via a native notebook preload
-class KernelMessageApi implements IMessageApi {
-    private messageCallback: ((msg: WebviewMessage) => Promise<void>) | undefined;
-    private kernelHandler: IDisposable | undefined;
-
-    public register(msgCallback: (msg: WebviewMessage) => Promise<void>) {
-        this.messageCallback = msgCallback;
-        if (!this.kernelHandler) {
-            this.kernelHandler = onDidReceiveKernelMessage(this.handleKernelMessage.bind(this));
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public sendMessage(type: string, payload?: any) {
-        postKernelMessage({ type: type, payload });
-    }
-
-    public dispose() {
-        if (this.kernelHandler) {
-            this.kernelHandler.dispose();
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async handleKernelMessage(ev: VSCodeEvent<any>) {
-        const msg = (ev as unknown) as WebviewMessage;
         if (msg && this.messageCallback) {
             await this.messageCallback(msg);
         }
@@ -172,24 +141,8 @@ export class PostOffice {
             return;
         }
 
-        // If the kernel message API is available use that if not use the VS Code webview messaging API
-        if (this.useKernelMessageApi()) {
-            this.messageApi = new KernelMessageApi();
-        } else {
-            this.messageApi = new VsCodeMessageApi();
-        }
-
+        this.messageApi = new VsCodeMessageApi();
         this.messageApi.register(this.handleMessage.bind(this));
-    }
-
-    // Check to see if global kernel message API is supported, if so use that
-    // instead of the VSCodeAPI which is not available in NativeNotebooks
-    private useKernelMessageApi(): boolean {
-        if (typeof postKernelMessage !== 'undefined') {
-            return true;
-        }
-
-        return false;
     }
 
     private async handleMessage(msg: WebviewMessage) {

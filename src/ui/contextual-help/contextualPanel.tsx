@@ -40,11 +40,6 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
             fontFamily: this.props.font.family
         };
 
-        // If in test mode, update our count. Use this to determine how many renders a normal update takes.
-        if (this.props.testMode) {
-            this.renderCount = this.renderCount + 1;
-        }
-
         // If we're hiding the UI, just render the empty string
         if (this.props.hideUI) {
             return (
@@ -59,7 +54,7 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
             );
         }
         // Update the state controller with our new state
-        const progressBar = (this.props.busy || !this.props.loaded) && !this.props.testMode ? <Progress /> : undefined;
+        const progressBar = (this.props.busy || !this.props.loaded) ? <Progress /> : undefined;
         return (
             <div id="main-panel" role="Main" style={dynamicFont}>
                 <div className="styleSetter">
@@ -84,7 +79,6 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
         return {
             baseTheme: baseTheme,
             cellVMs: this.props.cellVMs,
-            testMode: this.props.testMode,
             codeTheme: this.props.codeTheme,
             submittedText: this.props.submittedText,
             skipNextScroll: this.props.skipNextScroll ? true : false,
@@ -96,16 +90,12 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
     };
 
     private renderCell = (cellVM: ICellViewModel): JSX.Element | null => {
-        const maxTextSize = 500;
-
         return (
             <div key={cellVM.cell.id} id={cellVM.cell.id}>
                 <ErrorBoundary>
                     <ConnectedContextualCell
                         role="listitem"
-                        maxTextSize={maxTextSize}
                         enableScroll={true}
-                        testMode={this.props.testMode}
                         cellVM={cellVM}
                         baseTheme={this.props.baseTheme}
                         codeTheme={this.props.codeTheme}

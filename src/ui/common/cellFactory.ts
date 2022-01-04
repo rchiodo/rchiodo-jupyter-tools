@@ -3,7 +3,6 @@
 import type * as nbformat from '@jupyterlab/nbformat';
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const cloneDeep = require('lodash/cloneDeep');
-import '../../client/common/extensions';
 import { appendLineFeed, generateMarkdownFromCodeLines } from './index';
 
 function uncommentMagicCommands(line: string): string {

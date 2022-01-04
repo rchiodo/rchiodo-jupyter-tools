@@ -1,5 +1,6 @@
 
 import type * as nbformat from '@jupyterlab/nbformat';
+import { IEditorPosition } from '../../messages';
 
 export enum CellState {
     editing = -1,
@@ -34,12 +35,25 @@ export interface ICellViewModel {
     selected: boolean;
     focused: boolean;
     scrollCount: number;
+    cursorPos: CursorPos | IEditorPosition;
 }
 
 export interface IFont {
     size: number;
     family: string;
 }
+export enum CursorPos {
+    Top,
+    Bottom,
+    Current
+}
+
+export type SelectionAndFocusedInfo = {
+    selectedCellId?: string;
+    selectedCellIndex?: number;
+    focusedCellId?: string;
+    focusedCellIndex?: number;
+};
 
 export type IMainState = {
     cellVMs: ICellViewModel[];

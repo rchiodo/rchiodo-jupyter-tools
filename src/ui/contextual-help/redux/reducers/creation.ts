@@ -2,47 +2,28 @@
 // Licensed under the MIT License.
 'use strict';
 
-import { noop } from '../../../../client/common/utils/misc';
-import {
-    IEditorContentChange,
-    IFinishCell,
-    ILoadAllCells,
-    NotebookModelChange
-} from '../../../../client/datascience/interactive-common/interactiveWindowTypes';
-import { ICell, IJupyterExtraSettings } from '../../../../client/datascience/types';
+import { IFinishCell, IEditorContentChange, ILoadAllCells } from '../../../../messages';
 import { splitMultilineString } from '../../../common';
-import {
-    createCellVM,
-    createEmptyCell,
-    CursorPos,
-    DebugState,
-    extractInputText,
-    getSelectedAndFocusedInfo,
-    ICellViewModel,
-    IMainState
-} from '../../../interactive-common/mainState';
-import { queueIncomingActionWithPayload } from '../../../interactive-common/redux/helpers';
-import { Helpers } from '../../../interactive-common/redux/reducers/helpers';
-import { Transfer } from '../../../interactive-common/redux/reducers/transfer';
-import { CommonActionType, IAddCellAction, ICellAction } from '../../../interactive-common/redux/reducers/types';
+import { queueIncomingActionWithPayload } from '../../../common/redux/helpers';
+import { Helpers } from '../../../common/redux/reducers/helpers';
+import { IAddCellAction, CommonActionType, ICellAction } from '../../../common/redux/reducers/types';
+import { CursorPos, ICell, ICellViewModel, IMainState } from '../../../common/types';
+import { createCellVM, createEmptyCell, extractInputText, getSelectedAndFocusedInfo } from '../../../common/utils';
 import { NativeEditorReducerArg } from '../mapping';
 import { Effects } from './effects';
-import { Execution } from './execution';
-import { Movement } from './movement';
 
 export namespace Creation {
-    function prepareCellVM(cell: ICell, hasBeenRun: boolean, settings?: IJupyterExtraSettings): ICellViewModel {
-        const cellVM: ICellViewModel = createCellVM(cell, settings, true, false);
+    function prepareCellVM(cell: ICell): ICellViewModel {
+        const cellVM: ICellViewModel = createCellVM(cell);
 
         // Set initial cell visibility and collapse
         cellVM.editable = true;
 
         // Always have the cell input text open
-        const newText = extractInputText(cellVM, settings);
+        const newText = extractInputText(cellVM);
 
         cellVM.inputBlockOpen = true;
         cell.data.source = splitMultilineString(newText);
-        cellVM.hasBeenRun = hasBeenRun;
 
         return cellVM;
     }
@@ -110,14 +91,11 @@ export namespace Creation {
             cellVMs: newList
         };
 
-        // Send a messsage that we inserted a cell
-        Transfer.postModelInsert(arg, position, newVM.cell, arg.payload.data.cellId);
-
         return result;
     }
 
     export function insertExistingAbove(arg: NativeEditorReducerArg<ICellAction & { cell: ICell }>): IMainState {
-        const newVM = prepareCellVM(arg.payload.data.cell, false, arg.prevState.settings);
+        const newVM = prepareCellVM(arg.payload.data.cell);
         return insertAbove({
             ...arg,
             payload: {
@@ -131,7 +109,7 @@ export namespace Creation {
     }
 
     export function insertNewAbove(arg: NativeEditorReducerArg<ICellAction & IAddCellAction>): IMainState {
-        const newVM = prepareCellVM(createEmptyCell(arg.payload.data.newCellId, null), false, arg.prevState.settings);
+        const newVM = prepareCellVM(createEmptyCell(arg.payload.data.newCellId, null));
         return insertAbove({
             ...arg,
             payload: {
@@ -157,7 +135,7 @@ export namespace Creation {
     export function insertExistingBelow(
         arg: NativeEditorReducerArg<ICellAction & IAddCellAction & { cell: ICell }>
     ): IMainState {
-        const newVM = prepareCellVM(arg.payload.data.cell, false, arg.prevState.settings);
+        const newVM = prepareCellVM(arg.payload.data.cell);
         const newList = [...arg.prevState.cellVMs];
 
         // Find the position where we want to insert
@@ -175,9 +153,6 @@ export namespace Creation {
             undoStack: Helpers.pushStack(arg.prevState.undoStack, arg.prevState.cellVMs),
             cellVMs: newList
         };
-
-        // Send a messsage that we inserted a cell
-        Transfer.postModelInsert(arg, position, newVM.cell, arg.payload.data.cellId);
 
         return result;
     }
@@ -208,17 +183,17 @@ export namespace Creation {
     }
 
     export function startCell(arg: NativeEditorReducerArg<ICell>): IMainState {
-        return Helpers.updateOrAdd(arg, (c: ICell, s: IMainState) => prepareCellVM(c, true, s.settings));
+        return Helpers.updateOrAdd(arg, (c: ICell, s: IMainState) => prepareCellVM(c));
     }
 
     export function updateCell(arg: NativeEditorReducerArg<ICell>): IMainState {
-        return Helpers.updateOrAdd(arg, (c: ICell, s: IMainState) => prepareCellVM(c, true, s.settings));
+        return Helpers.updateOrAdd(arg, (c: ICell, s: IMainState) => prepareCellVM(c));
     }
 
     export function finishCell(arg: NativeEditorReducerArg<IFinishCell>): IMainState {
         return Helpers.updateOrAdd(
             { ...arg, payload: { ...arg.payload, data: arg.payload.data.cell } },
-            (c: ICell, s: IMainState) => prepareCellVM(c, true, s.settings)
+            (c: ICell, s: IMainState) => prepareCellVM(c)
         );
     }
 
@@ -234,12 +209,8 @@ export namespace Creation {
             selected: false,
             focused: false,
             cursorPos: CursorPos.Current,
-            hasBeenRun: false,
             scrollCount: 0,
-            runningByLine: DebugState.Design
         };
-
-        Transfer.postModelRemoveAll(arg, newVM.cell.id);
 
         return {
             ...arg.prevState,
@@ -261,7 +232,6 @@ export namespace Creation {
                 const after = source.slice(c.rangeOffset + c.rangeLength);
                 newVM.inputBlockText = `${before}${c.text}${after}`;
             });
-            newVM.codeVersion = newVM.codeVersion ? newVM.codeVersion + 1 : 1;
             newVM.cell.data.source = splitMultilineString(newVM.inputBlockText);
             newVM.cursorPos = arg.payload.data.changes[0].position;
             const newVMs = [...arg.prevState.cellVMs];
@@ -290,14 +260,8 @@ export namespace Creation {
                 selected: cells[0].selected,
                 focused: cells[0].focused,
                 cursorPos: CursorPos.Current,
-                hasBeenRun: false,
                 scrollCount: 0,
-                runningByLine: DebugState.Design
             };
-
-            // Send messages to other side to indicate the new add
-            Transfer.postModelRemove(arg, 0, cells[0].cell);
-            Transfer.postModelInsert(arg, 0, newVM.cell);
 
             return {
                 ...arg.prevState,
@@ -308,8 +272,6 @@ export namespace Creation {
             // Otherwise just a straight delete
             const index = arg.prevState.cellVMs.findIndex((c) => c.cell.id === arg.payload.data.cellId);
             if (index >= 0) {
-                Transfer.postModelRemove(arg, index, cells[index].cell);
-
                 // Recompute select/focus if this item has either
                 const previousSelection = getSelectedAndFocusedInfo(arg.prevState);
                 const newVMs = [...arg.prevState.cellVMs.filter((c) => c.cell.id !== arg.payload.data.cellId)];
@@ -340,7 +302,7 @@ export namespace Creation {
     }
 
     export function loadAllCells(arg: NativeEditorReducerArg<ILoadAllCells>): IMainState {
-        const vms = arg.payload.data.cells.map((c) => prepareCellVM(c, false, arg.prevState.settings));
+        const vms = arg.payload.data.cells.map((c) => prepareCellVM(c));
         return {
             ...arg.prevState,
             busy: false,
@@ -361,156 +323,4 @@ export namespace Creation {
         };
     }
 
-    function handleUndoModel(arg: NativeEditorReducerArg<NotebookModelChange>): IMainState {
-        // Disable the queueAction in the arg so that calling other reducers doesn't cause
-        // messages to be posted back (as were handling a message from the extension here)
-        const disabledQueueArg = { ...arg, queueAction: noop };
-        switch (arg.payload.data.kind) {
-            case 'clear':
-                return loadAllCells({
-                    ...disabledQueueArg,
-                    payload: { ...arg.payload, data: { cells: arg.payload.data.oldCells } }
-                });
-            case 'edit':
-                return applyCellEdit({
-                    ...disabledQueueArg,
-                    payload: { ...arg.payload, data: { id: arg.payload.data.id, changes: arg.payload.data.reverse } }
-                });
-            case 'insert':
-                return deleteCell({
-                    ...disabledQueueArg,
-                    payload: { ...arg.payload, data: { cellId: arg.payload.data.cell.id } }
-                });
-            case 'remove':
-                if (arg.prevState.cellVMs.length > arg.payload.data.index) {
-                    const cellBelow = arg.prevState.cellVMs[arg.payload.data.index].cell;
-                    return insertExistingAbove({
-                        ...disabledQueueArg,
-                        payload: {
-                            ...arg.payload,
-                            data: { cell: arg.payload.data.cell, cellId: cellBelow ? cellBelow.id : undefined }
-                        }
-                    });
-                } else {
-                    // Delete is outside current range. Insert at the bottom
-                    return insertExistingBelow({
-                        ...disabledQueueArg,
-                        payload: {
-                            ...arg.payload,
-                            data: {
-                                cell: arg.payload.data.cell,
-                                cellId: undefined,
-                                newCellId: arg.payload.data.cell.id
-                            }
-                        }
-                    });
-                }
-            case 'remove_all':
-                return loadAllCells({
-                    ...disabledQueueArg,
-                    payload: { ...arg.payload, data: { cells: arg.payload.data.oldCells } }
-                });
-            case 'swap':
-                return Movement.swapCells({
-                    ...disabledQueueArg,
-                    payload: {
-                        ...arg.payload,
-                        data: {
-                            firstCellId: arg.payload.data.secondCellId,
-                            secondCellId: arg.payload.data.firstCellId
-                        }
-                    }
-                });
-            case 'modify':
-                // Undo for modify should reapply the outputs. Go through each and apply the update
-                let result = arg.prevState;
-                arg.payload.data.oldCells.forEach((c) => {
-                    result = updateCell({
-                        ...disabledQueueArg,
-                        prevState: result,
-                        payload: { ...arg.payload, data: c }
-                    });
-                });
-                return result;
-
-            default:
-                // File, version can be ignored.
-                break;
-        }
-
-        return arg.prevState;
-    }
-
-    function handleRedoModel(arg: NativeEditorReducerArg<NotebookModelChange>): IMainState {
-        // Disable the queueAction in the arg so that calling other reducers doesn't cause
-        // messages to be posted back (as were handling a message from the extension here)
-        const disabledQueueArg = { ...arg, queueAction: noop };
-        switch (arg.payload.data.kind) {
-            case 'clear':
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return Execution.clearAllOutputs(disabledQueueArg as any);
-            case 'edit':
-                return applyCellEdit({
-                    ...disabledQueueArg,
-                    payload: { ...arg.payload, data: { id: arg.payload.data.id, changes: arg.payload.data.forward } }
-                });
-            case 'insert':
-                return insertExistingAbove({
-                    ...disabledQueueArg,
-                    payload: {
-                        ...arg.payload,
-                        data: { cell: arg.payload.data.cell, cellId: arg.payload.data.codeCellAboveId }
-                    }
-                });
-            case 'remove':
-                return deleteCell({
-                    ...disabledQueueArg,
-                    payload: { ...arg.payload, data: { cellId: arg.payload.data.cell.id } }
-                });
-            case 'remove_all':
-                return deleteAllCells({
-                    ...disabledQueueArg,
-                    payload: { ...arg.payload, data: { newCellId: arg.payload.data.newCellId } }
-                });
-            case 'swap':
-                return Movement.swapCells({
-                    ...disabledQueueArg,
-                    payload: {
-                        ...arg.payload,
-                        data: {
-                            firstCellId: arg.payload.data.secondCellId,
-                            secondCellId: arg.payload.data.firstCellId
-                        }
-                    }
-                });
-            case 'modify':
-                // Redo for modify should reapply the outputs. Go through each and apply the update
-                let result = arg.prevState;
-                arg.payload.data.newCells.forEach((c) => {
-                    result = updateCell({
-                        ...disabledQueueArg,
-                        prevState: result,
-                        payload: { ...arg.payload, data: c }
-                    });
-                });
-                return result;
-            default:
-                // Modify, file, version can all be ignored.
-                break;
-        }
-
-        return arg.prevState;
-    }
-
-    export function handleUpdate(arg: NativeEditorReducerArg<NotebookModelChange>): IMainState {
-        switch (arg.payload.data.source) {
-            case 'undo':
-                return handleUndoModel(arg);
-            case 'redo':
-                return handleRedoModel(arg);
-            default:
-                break;
-        }
-        return arg.prevState;
-    }
 }

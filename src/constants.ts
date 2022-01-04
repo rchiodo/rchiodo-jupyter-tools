@@ -31,3 +31,30 @@ export namespace Identifiers {
     export const REMOTE_URI_ID_PARAM = 'id';
     export const REMOTE_URI_HANDLE_PARAM = 'uriHandle';
 }
+
+export namespace RegExpValues {
+    export const PythonCellMarker = /^(#\s*%%|#\s*\<codecell\>|#\s*In\[\d*?\]|#\s*In\[ \])/;
+    export const PythonMarkdownCellMarker = /^(#\s*%%\s*\[markdown\]|#\s*\<markdowncell\>)/;
+    export const PyKernelOutputRegEx = /.*\s+(.+)$/m;
+    export const KernelSpecOutputRegEx = /^\s*(\S+)\s+(\S+)$/;
+    // This next one has to be a string because uglifyJS isn't handling the groups. We use named-js-regexp to parse it
+    // instead.
+    export const UrlPatternRegEx =
+        '(?<PREFIX>https?:\\/\\/)((\\(.+\\s+or\\s+(?<IP>.+)\\))|(?<LOCAL>[^\\s]+))(?<REST>:.+)';
+    export interface IUrlPatternGroupType {
+        LOCAL: string | undefined;
+        PREFIX: string | undefined;
+        REST: string | undefined;
+        IP: string | undefined;
+    }
+    export const HttpPattern = /https?:\/\//;
+    export const ExtractPortRegex = /https?:\/\/[^\s]+:(\d+)[^\s]+/;
+    export const ConvertToRemoteUri = /(https?:\/\/)([^\s])+(:\d+[^\s]*)/;
+    export const ParamsExractorRegEx = /\S+\((.*)\)\s*{/;
+    export const ArgsSplitterRegEx = /([^\s,]+)/;
+    export const ShapeSplitterRegEx = /.*,\s*(\d+).*/;
+    export const SvgHeightRegex = /(\<svg.*height=\")(.*?)\"/;
+    export const SvgWidthRegex = /(\<svg.*width=\")(.*?)\"/;
+    export const SvgSizeTagRegex = /\<svg.*tag=\"sizeTag=\{(.*),\s*(.*)\}\"/;
+    export const StyleTagRegex = /\<style[\s\S]*\<\/style\>/m;
+}

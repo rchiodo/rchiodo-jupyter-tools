@@ -2,21 +2,19 @@
 // Licensed under the MIT License.
 'use strict';
 import { min } from 'lodash';
+import { ICellViewModel, IMainState, CellState, ICell } from '../../types';
+import { arePathsSame } from '../../utils';
+import { detectBaseTheme } from '../themeDetector';
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const cloneDeep = require('lodash/cloneDeep');
 
-import { CellState, ICell, IJupyterExtraSettings } from '../../../../client/datascience/types';
-import { arePathsSame } from '../../../react-common/arePathsSame';
-import { detectBaseTheme } from '../../../react-common/themeDetector';
-import { DebugState, ICellViewModel, IMainState } from '../../mainState';
 import { CommonActionType, CommonReducerArg } from './types';
 
 const StackLimit = 10;
 
 export namespace Helpers {
-    export function computeKnownDark(settings?: IJupyterExtraSettings): boolean {
-        const ignore = settings?.ignoreVscodeTheme ? true : false;
-        const baseTheme = ignore ? 'vscode-light' : detectBaseTheme();
+    export function computeKnownDark(): boolean {
+        const baseTheme = detectBaseTheme();
         return baseTheme !== 'vscode-light';
     }
 
@@ -87,7 +85,6 @@ export namespace Helpers {
             // and the user has updated the cell text since then.
             const newVM: ICellViewModel = {
                 ...newVMs[index],
-                hasBeenRun: true,
                 cell: {
                     ...newVMs[index].cell,
                     state: arg.payload.data.state,
@@ -96,7 +93,6 @@ export namespace Helpers {
                         source: newVMs[index].cell.data.source
                     }
                 },
-                runningByLine: finished ? DebugState.Design : newVMs[index].runningByLine
             };
             newVMs[index] = newVM;
 

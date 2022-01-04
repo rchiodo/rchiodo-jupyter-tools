@@ -27,9 +27,6 @@ interface ICellOutputProps {
     enableScroll?: boolean;
     hideOutput?: boolean;
     themeMatplotlibPlots?: boolean;
-    expandImage(imageHtml: string): void;
-    widgetFailed(ex: Error): void;
-    openSettings(settings?: string): void;
 }
 
 interface ICellOutputData {
@@ -290,7 +287,7 @@ export class CellOutput extends React.Component<ICellOutputProps> {
 
             // Output may have ascii colorization chars in it.
             try {
-                if (ansiRegex().test(concatted)) {
+                if (ansiRegex.default().test(concatted)) {
                     const converter = new CellOutput.ansiToHtmlClass(CellOutput.getAnsiToHtmlOptions());
                     const html = converter.toHtml(concatted);
                     input = {

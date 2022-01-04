@@ -3,10 +3,11 @@
 
 'use strict';
 
-import { MessageType } from '@jupyterlab/services/lib/terminal/terminal';
 import * as Redux from 'redux';
-import { WindowMessages, CssMessages, SharedMessages } from '../../../messages';
+import { WindowMessages, CssMessages, SharedMessages, MessageType, MessageMapping } from '../../../messages';
 import { CommonActionType, CommonActionTypeMapping } from './reducers/types';
+import { QueueAnotherFunc } from './reduxUtils';
+import { BaseReduxActionPayload, SyncPayload } from './types';
 
 const AllowedMessages = [
     ...Object.values(WindowMessages),
@@ -30,19 +31,15 @@ type ReducerArg = {
 };
 
 export function queueIncomingActionWithPayload<
-    M extends IInteractiveWindowMapping & CommonActionTypeMapping,
+    M extends MessageMapping & CommonActionTypeMapping,
     K extends keyof M
 >(originalReducerArg: ReducerArg, type: K, data: M[K]): void {
-    if (!checkToPostBasedOnOriginalMessageType(originalReducerArg.payload?.messageType)) {
-        return;
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const action = { type, payload: { data, messageDirection: 'incoming' } as any } as any;
     originalReducerArg.queueAction(action);
 }
 
-export function queueIncomingAction<M extends IInteractiveWindowMapping & CommonActionTypeMapping, K extends keyof M>(
+export function queueIncomingAction<M extends MessageMapping & CommonActionTypeMapping, K extends keyof M>(
     originalReducerArg: ReducerArg,
     type: K
 ): void {
@@ -53,7 +50,7 @@ export function queueIncomingAction<M extends IInteractiveWindowMapping & Common
 /**
  * Post a message to the extension (via dispatcher actions).
  */
-export function postActionToExtension<K, M extends IInteractiveWindowMapping, T extends keyof M = keyof M>(
+export function postActionToExtension<K, M extends MessageMapping, T extends keyof M = keyof M>(
     originalReducerArg: ReducerArg,
     message: T,
     payload?: M[T]
@@ -62,17 +59,13 @@ export function postActionToExtension<K, M extends IInteractiveWindowMapping, T 
  * Post a message to the extension (via dispatcher actions).
  */
 // eslint-disable-next-line @typescript-eslint/unified-signatures
-export function postActionToExtension<K, M extends IInteractiveWindowMapping, T extends keyof M = keyof M>(
+export function postActionToExtension<K, M extends MessageMapping, T extends keyof M = keyof M>(
     originalReducerArg: ReducerArg,
     message: T,
     payload?: M[T]
 ): void;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function postActionToExtension(originalReducerArg: ReducerArg, message: any, payload?: any) {
-    if (!checkToPostBasedOnOriginalMessageType(originalReducerArg.payload?.messageType)) {
-        return;
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newPayload: BaseReduxActionPayload<any> = ({
         data: payload,
@@ -85,7 +78,7 @@ export function postActionToExtension(originalReducerArg: ReducerArg, message: a
 }
 export function unwrapPostableAction(
     action: Redux.AnyAction
-): { type: keyof IInteractiveWindowMapping; payload?: BaseReduxActionPayload<{}> } {
+): { type: keyof MessageMapping; payload?: BaseReduxActionPayload<{}> } {
     // Unwrap the payload that was created in `createPostableAction`.
     const type = action.type;
     const payload: BaseReduxActionPayload<{}> | undefined = action.payload;
@@ -105,34 +98,19 @@ export function isSyncingMessage(messageType?: MessageType) {
         (messageType && MessageType.syncWithLiveShare) === MessageType.syncWithLiveShare
     );
 }
+
 export function reBroadcastMessageIfRequired(
     dispatcher: Function,
-    message: InteractiveWindowMessages | SharedMessages | CommonActionType | CssMessages,
+    message: WindowMessages | SharedMessages | CommonActionType | CssMessages,
     payload?: BaseReduxActionPayload<{}>
 ) {
     const messageType = payload?.messageType || 0;
     if (
-        message === InteractiveWindowMessages.Sync ||
+        message === WindowMessages.Sync ||
         (messageType && MessageType.syncAcrossSameNotebooks) === MessageType.syncAcrossSameNotebooks ||
         (messageType && MessageType.syncWithLiveShare) === MessageType.syncWithLiveShare ||
         payload?.messageDirection === 'outgoing'
     ) {
         return;
-    }
-    // Check if we need to re-broadcast this message to other editors/sessions.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = shouldRebroadcast(message as any, payload);
-    if (result[0]) {
-        // Mark message as incoming, to indicate this will be sent into the other webviews.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const syncPayloadData: BaseReduxActionPayload<any> = {
-            data: payload?.data,
-            messageType: result[1],
-            messageDirection: 'incoming'
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const syncPayload: SyncPayload = { type: message, payload: syncPayloadData };
-        // First focus on UX perf, hence the setTimeout (i.e. ensure other code in event loop executes).
-        setTimeout(() => dispatcher(InteractiveWindowMessages.Sync, syncPayload), 1);
     }
 }

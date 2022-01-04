@@ -2,16 +2,10 @@
 // Licensed under the MIT License.
 'use strict';
 
-import { NativeKeyboardCommandTelemetry, NativeMouseCommandTelemetry } from '../../../../client/datascience/constants';
-import {
-    IEditorContentChange,
-    InteractiveWindowMessages,
-    IShowDataViewer
-} from '../../../../client/datascience/interactive-common/interactiveWindowTypes';
-import { BaseReduxActionPayload } from '../../../../client/datascience/interactive-common/types';
-import { IJupyterVariablesRequest } from '../../../../client/datascience/types';
-import { ActionWithPayload, ReducerArg } from '../../../react-common/reduxUtils';
-import { CursorPos, IMainState } from '../../mainState';
+import { WindowMessages, IEditorContentChange } from "../../../../messages";
+import { CursorPos, IMainState } from "../../types";
+import { ReducerArg, ActionWithPayload } from "../reduxUtils";
+import { BaseReduxActionPayload } from "../types";
 
 /**
  * How to add a new state change:
@@ -55,11 +49,7 @@ export enum CommonActionType {
     INSERT_ABOVE_FIRST = 'action.insert_above_first',
     INSERT_BELOW = 'action.insert_below',
     INTERRUPT_KERNEL = 'action.interrupt_kernel_action',
-    IPYWIDGET_RENDER_FAILURE = 'action.ipywidget_render_failure',
     LAUNCH_NOTEBOOK_TRUST_PROMPT = 'action.launch_notebook_trust_prompt',
-    LOAD_IPYWIDGET_CLASS_SUCCESS = 'action.load_ipywidget_class_success',
-    LOAD_IPYWIDGET_CLASS_FAILURE = 'action.load_ipywidget_class_failure',
-    IPYWIDGET_WIDGET_VERSION_NOT_SUPPORTED = 'action.ipywidget_widget_version_not_supported',
     LOADED_ALL_CELLS = 'action.loaded_all_cells',
     LINK_CLICK = 'action.link_click',
     MOVE_CELL_DOWN = 'action.move_cell_down',
@@ -112,8 +102,6 @@ export type CommonActionTypeMapping = {
     [CommonActionType.EXPORT]: never | undefined;
     [CommonActionType.EXPORT_NOTEBOOK_AS]: never | undefined;
     [CommonActionType.SAVE]: never | undefined;
-    [CommonActionType.SHOW_DATA_VIEWER]: IShowDataViewerAction;
-    [CommonActionType.SEND_COMMAND]: ISendCommandAction;
     [CommonActionType.SELECT_CELL]: ICellAndCursorAction;
     [CommonActionType.MOVE_CELL_UP]: ICellAction;
     [CommonActionType.MOVE_CELL_DOWN]: ICellAction;
@@ -135,7 +123,6 @@ export type CommonActionTypeMapping = {
     [CommonActionType.UNMOUNT]: never | undefined;
     [CommonActionType.SELECT_SERVER]: never | undefined;
     [CommonActionType.CODE_CREATED]: ICodeCreatedAction;
-    [CommonActionType.GET_VARIABLE_DATA]: IJupyterVariablesRequest;
     [CommonActionType.TOGGLE_VARIABLE_EXPLORER]: never | undefined;
     [CommonActionType.SET_VARIABLE_EXPLORER_HEIGHT]: IVariableExplorerHeight;
     [CommonActionType.SET_VARIABLE_VIEW_HEIGHT]: IVariableViewHeight;
@@ -144,10 +131,6 @@ export type CommonActionTypeMapping = {
     [CommonActionType.OPEN_SETTINGS]: IOpenSettingsAction;
     [CommonActionType.FOCUS_INPUT]: never | undefined;
     [CommonActionType.LAUNCH_NOTEBOOK_TRUST_PROMPT]: never | undefined;
-    [CommonActionType.LOAD_IPYWIDGET_CLASS_SUCCESS]: LoadIPyWidgetClassLoadAction;
-    [CommonActionType.LOAD_IPYWIDGET_CLASS_FAILURE]: ILoadIPyWidgetClassFailureAction;
-    [CommonActionType.IPYWIDGET_WIDGET_VERSION_NOT_SUPPORTED]: NotifyIPyWidgeWidgetVersionNotSupportedAction;
-    [CommonActionType.IPYWIDGET_RENDER_FAILURE]: Error;
     [CommonActionType.STEP]: ICellAction;
     [CommonActionType.CONTINUE]: ICellAction;
     [CommonActionType.RUN_BY_LINE]: ICellAction;
@@ -155,8 +138,6 @@ export type CommonActionTypeMapping = {
     [CommonActionType.UNDO]: never | undefined;
     [CommonActionType.REDO]: never | undefined;
 };
-
-export interface IShowDataViewerAction extends IShowDataViewer {}
 
 export interface ILinkClickAction {
     href: string;
@@ -167,7 +148,7 @@ export interface IScrollAction {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CommonReducerArg<AT = CommonActionType | InteractiveWindowMessages, T = never | undefined> = ReducerArg<
+export type CommonReducerArg<AT = CommonActionType | WindowMessages, T = never | undefined> = ReducerArg<
     IMainState,
     AT,
     BaseReduxActionPayload<T>
@@ -216,12 +197,6 @@ export interface IRefreshVariablesAction {
     newExecutionCount?: number;
 }
 
-export interface IShowDataViewerAction extends IShowDataViewer {}
-
-export interface ISendCommandAction {
-    command: NativeKeyboardCommandTelemetry | NativeMouseCommandTelemetry;
-}
-
 export interface IChangeCellTypeAction {
     cellId: string;
 }
@@ -266,4 +241,4 @@ export type NotifyIPyWidgeWidgetVersionNotSupportedAction = {
     moduleVersion: string;
 };
 
-export type CommonAction<T = never | undefined> = ActionWithPayload<T, CommonActionType | InteractiveWindowMessages>;
+export type CommonAction<T = never | undefined> = ActionWithPayload<T, CommonActionType | WindowMessages>;
