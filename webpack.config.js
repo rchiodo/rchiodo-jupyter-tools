@@ -33,7 +33,7 @@ const extensionConfig = {
         test: /\.ts$/,
         exclude: [
           /node_modules/,
-          './src/ui'
+          '/src/ui'
         ],
         use: [
           {
@@ -42,6 +42,11 @@ const extensionConfig = {
         ]
       }
     ]
+  },
+  node: {
+    global: false,
+    __filename: false,
+    __dirname: false,
   },
   devtool: 'nosources-source-map',
   infrastructureLogging: {

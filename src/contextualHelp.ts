@@ -17,7 +17,7 @@ import { SimpleMessageListener } from './webviews/simpleMessageListener';
 
 import { WebviewViewHost } from './webviews/webviewViewHost';
 
-const root = path.join(EXTENSION_ROOT_DIR, 'out', 'datascience-ui', 'viewers');
+const root = path.join(__dirname, 'ui', 'viewers');
 
 // This is the client side host for the contextual help (shown in the jupyter tab)
 export class ContextualHelp extends WebviewViewHost<MessageMapping> implements vscode.Disposable, IStatusParticipant {
@@ -35,7 +35,6 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
     }
     constructor(provider: IWebviewViewProvider, private readonly statusProvider: StatusProvider) {
         super(provider, (c, d) => new SimpleMessageListener(c, d), root, [
-            path.join(root, 'commons.initial.bundle.js'),
             path.join(root, 'contextualHelp.js')
         ]);
 
