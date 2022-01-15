@@ -2,23 +2,34 @@
 // for the documentation about the tasks.json format
 {
 	"version": "2.0.0",
+    "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+    },
 	"tasks": [
 		{
+            "label": "Compile",
 			"type": "npm",
 			"script": "watch",
-			"problemMatcher": [
-				"$ts-webpack-watch",
-				"$tslint-webpack-watch"
-			],
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never",
-				"group": "watchers"
-			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
+            "isBackground": true,
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$tsc-watch", "$ts-checker-webpack-watch"]
+		},
+		{
+            "label": "Compile Web Views",
+			"type": "npm",
+			"script": "compile-webviews-watch",
+            "isBackground": true,
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$tsc-watch", "$ts-checker-webpack-watch"]
 		},
 		{
 			"type": "npm",

@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 'use strict';
-import * as path from 'path';
 import * as Redux from 'redux';
 import { createLogger } from 'redux-logger';
-import { Identifiers, EXTENSION_ROOT_DIR } from '../../../constants';
 import { CssMessages, MessageType, WindowMessages } from '../../../messages';
 import { PostOffice } from '../postOffice';
 import { IMainState } from '../types';
@@ -34,7 +32,7 @@ function generateDefaultState(baseTheme: string): IMainState {
             size: 14,
             family: "Consolas, 'Courier New', monospace"
         },
-        codeTheme: Identifiers.GeneratedThemeName,
+        codeTheme: 'ipython-theme',
         focusPending: 0,
         loaded: false,
         isNotebookTrusted: true,
@@ -58,7 +56,7 @@ function createTestLogger() {
     if (logFileEnv) {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const log4js = require('log4js') as typeof import('log4js');
-        const logFilePath = path.isAbsolute(logFileEnv) ? logFileEnv : path.join(EXTENSION_ROOT_DIR, logFileEnv);
+        const logFilePath = logFileEnv;
         log4js.configure({
             appenders: { reduxLogger: { type: 'file', filename: logFilePath } },
             categories: { default: { appenders: ['reduxLogger'], level: 'debug' } }

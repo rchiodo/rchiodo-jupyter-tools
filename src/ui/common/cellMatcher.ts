@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 'use strict';
-import { RegExpValues } from '../../constants';
 import { splitLines } from './strings';
 
 export class CellMatcher {
@@ -16,11 +15,11 @@ export class CellMatcher {
     constructor() {
         this.codeMatchRegEx = this.createRegExp(
             undefined,
-            RegExpValues.PythonCellMarker
+            /^(#\s*%%|#\s*\<codecell\>|#\s*In\[\d*?\]|#\s*In\[ \])/
         );
         this.markdownMatchRegEx = this.createRegExp(
             undefined,
-            RegExpValues.PythonMarkdownCellMarker
+            /^(#\s*%%\s*\[markdown\]|#\s*\<markdowncell\>)/
         );
         this.codeExecRegEx = new RegExp(`${this.codeMatchRegEx.source}(.*)`);
         this.markdownExecRegEx = new RegExp(`${this.markdownMatchRegEx.source}(.*)`);

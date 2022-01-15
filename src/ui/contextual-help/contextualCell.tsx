@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 'use strict';
-import '../../client/common/extensions';
 
 import type * as nbformat from '@jupyterlab/nbformat';
 import * as fastDeepEqual from 'fast-deep-equal';

@@ -6,7 +6,6 @@ import * as ansiRegex from 'ansi-regex';
 import * as fastDeepEqual from 'fast-deep-equal';
 import { noop } from 'lodash';
 import * as React from 'react';
-import { Identifiers } from '../../constants';
 import { concatMultilineString } from '../common';
 import { fixMarkdown } from '../common/markdownManipulation';
 import { CellState, ICellViewModel } from '../common/types';
@@ -110,21 +109,13 @@ export class CellOutput extends React.Component<ICellOutputProps> {
     }
     public render() {
         // Only render results if not an edit cell
-        if (this.props.cellVM.cell.id !== Identifiers.EditCellId) {
-            const outputClassNames = this.isCodeCell()
-                ? `cell-output cell-output-${this.props.baseTheme}`
-                : 'markdown-cell-output-container';
+        const outputClassNames = this.isCodeCell()
+            ? `cell-output cell-output-${this.props.baseTheme}`
+            : 'markdown-cell-output-container';
 
-            return (
-                <div className={outputClassNames}>
-                    {this.renderResults()}
-                </div>
-            );
-        }
-        return null;
+        return <div className={outputClassNames}>{this.renderResults()}</div>;
     }
-    public componentWillUnmount() {
-    }
+    public componentWillUnmount() {}
     public componentDidMount() {
         if (!this.isCodeCell() || !this.hasOutput() || !this.getCodeCell().outputs || this.props.hideOutput) {
             return;
@@ -181,11 +172,7 @@ export class CellOutput extends React.Component<ICellOutputProps> {
         if (nextProps.cellVM.cell.data.outputs !== this.props.cellVM.cell.data.outputs) {
             return true;
         }
-        if (
-            !this.isCodeCell() &&
-            nextProps.cellVM.cell.id !== Identifiers.EditCellId &&
-            nextProps.cellVM.cell.data.source !== this.props.cellVM.cell.data.source
-        ) {
+        if (!this.isCodeCell() && nextProps.cellVM.cell.data.source !== this.props.cellVM.cell.data.source) {
             return true;
         }
 
@@ -227,12 +214,10 @@ export class CellOutput extends React.Component<ICellOutputProps> {
                 this.renderCodeOutputs()
                     .filter((item) => !!item)
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .map((item) => (item as any) as JSX.Element)
+                    .map((item) => item as any as JSX.Element)
             );
-        } else if (this.props.cellVM.cell.id !== Identifiers.EditCellId) {
-            return this.renderMarkdownOutputs();
         } else {
-            return [];
+            return this.renderMarkdownOutputs();
         }
     };
 

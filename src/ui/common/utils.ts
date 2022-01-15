@@ -1,6 +1,5 @@
 import { cloneDeep } from "lodash";
 import { concatMultilineString, splitMultilineString } from ".";
-import { Identifiers } from "../../constants";
 import { createCodeCell } from "./cellFactory";
 import { CellMatcher } from "./cellMatcher";
 import { CellState, CursorPos, ICell, ICellViewModel, SelectionAndFocusedInfo } from "./types";
@@ -71,13 +70,13 @@ export function createCellVM(
     return vm;
 }
 
-export function createEmptyCell(id: string | undefined, executionCount: number | null): ICell {
+export function createEmptyCell(id: string, executionCount: number | null): ICell {
     const emptyCodeCell = createCodeCell();
     emptyCodeCell.execution_count = executionCount ?? null;
     return {
         data: emptyCodeCell,
-        id: id ? id : Identifiers.EditCellId,
-        file: Identifiers.EmptyFileName,
+        id: id,
+        file: 'empty.py',
         line: 0,
         state: CellState.finished
     };
