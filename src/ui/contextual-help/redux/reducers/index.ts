@@ -3,6 +3,7 @@
 'use strict';
 import { CssMessages, WindowMessages } from '../../../../messages';
 import { CommonEffects } from '../../../common/redux/reducers/commonEffects';
+import { Transfer } from '../../../common/redux/reducers/transfer';
 import { CommonActionType } from '../../../common/redux/reducers/types';
 import { INativeEditorActionMapping } from '../mapping';
 import { Creation } from './creation';
@@ -26,6 +27,7 @@ export const reducerMap: Partial<INativeEditorActionMapping> = {
     [CommonActionType.TOGGLE_LINE_NUMBERS]: Effects.toggleLineNumbers,
     [CommonActionType.TOGGLE_OUTPUT]: Effects.toggleOutput,
     [CommonActionType.UNMOUNT]: Creation.unmount,
+    [CommonActionType.EDITOR_LOADED]: Transfer.started,
 
     // Messages from the webview (some are ignored)
     [WindowMessages.StartCell]: Creation.startCell,

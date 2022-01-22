@@ -80,21 +80,6 @@ export abstract class Webview implements IWebview {
             .forEach((f) => this.webviewHost?.webview!.asWebviewUri(f));
 
         const rootPath = this.webviewHost.webview.asWebviewUri(Uri.file(this.options.rootPath)).toString();
-        const fontAwesomePath = this.webviewHost.webview
-            .asWebviewUri(
-                Uri.file(
-                    path.join(
-                        this.options.rootPath,
-                        'out',
-                        'fontAwesome',
-                        'node_modules',
-                        'font-awesome',
-                        'css',
-                        'font-awesome.min.css'
-                    )
-                )
-            )
-            .toString();
 
         // Check to see if we should force on Test middleware for our react code
         const forceTestMiddleware = process.env.VSC_JUPYTER_WEBVIEW_TEST_MIDDLEWARE || 'false';
@@ -112,7 +97,6 @@ export abstract class Webview implements IWebview {
                 <meta name="theme" content="${Identifiers.GeneratedThemeName}"/>
                 <title>VS Code Python React UI</title>
                 <base href="${uriBase}${uriBase.endsWith('/') ? '' : '/'}"/>
-                <link rel="stylesheet" href="${fontAwesomePath}">
                 </head>
             <body>
                 <noscript>You need to enable JavaScript to run this app.</noscript>

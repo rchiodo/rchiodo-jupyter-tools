@@ -1,20 +1,21 @@
 {
-    "name": "rchiodo-jupyter-tools",
+    "name": "jupyter-tools",
     "displayName": "Jupyter Extras",
     "description": "Extra tools for developing notebooks in VS code",
     "version": "0.0.1",
+    "publisher": "rchiodo",
     "engines": {
         "vscode": "^1.63.0-insiders"
     },
     "license": "MIT",
     "icon": "icon.png",
-    "homepage": "https://github.com/rchjodo/rchiodo-jupyter-tools",
+    "homepage": "https://github.com/rchiodo/rchiodo-jupyter-tools",
     "repository": {
         "type": "git",
-        "url": "https://github.com/rchjodo/rchiodo-jupyter-tools"
+        "url": "https://github.com/rchiodo/rchiodo-jupyter-tools"
     },
     "bugs": {
-        "url": "https://github.com/rchjodo/rchiodo-jupyter-tools/issues"
+        "url": "https://github.com/rchiodo/rchiodo-jupyter-tools/issues"
     },
     "galleryBanner": {
         "color": "#ffffff",
@@ -56,7 +57,8 @@
         "onCommand:jupyter.notebookeditor.openInInteractive",
         "onCommand::jupyter.notebookeditor.openContextualHelp",
         "onNotebook:jupyter-notebook",
-        "onNotebook:interactive"
+        "onNotebook:interactive",
+        "onView:jupyter-extensions"
     ],
     "main": "./dist/extension.js",
     "contributes": {
@@ -89,8 +91,17 @@
                 "enablement": "isWorkspaceTrusted && jupyter.ispythonnotebook"
             }
         ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "jupyter-extensions",
+                    "title": "Jupyter",
+                    "icon": "$(notebook)"
+                }
+            ]
+        },
         "views": {
-            "jupyter": [
+            "jupyter-extensions": [
                 {
                     "type": "webview",
                     "id": "jupyterContextualHelp",
@@ -100,11 +111,13 @@
         }
     },
     "scripts": {
-        "package": "gulp clean && gulp prePublishBundle && vsce package -o rchiodo-jupyter-tools.vsix",
-        "vscode:prepublish": "npm run package",
+        "package": "vsce package -o rchiodo-jupyter-tools.vsix",
+        "vscode:prepublish": "npm run clean && npm run compile-webviews && npm run compile",
         "compile": "webpack",
         "compile-webviews-watch": "cross-env NODE_OPTIONS=--max_old_space_size=9096 webpack --config ./build/webpack/webpack.ui.config.js --watch",
+        "compile-webviews": "cross-env NODE_OPTIONS=--max_old_space_size=9096 webpack --config ./build/webpack/webpack.ui.config.js",
         "watch": "webpack --watch",
+        "clean": "del-cli dist/**",
         "compile-tests": "tsc -p . --outDir out",
         "watch-tests": "tsc -p . -w --outDir out",
         "pretest": "npm run compile-tests && npm run compile && npm run lint",
@@ -130,10 +143,10 @@
         "copy-webpack-plugin": "^10.2.0",
         "cross-env": "^7.0.3",
         "css-loader": "^6.5.1",
+        "del-cli": "^4.0.1",
         "eslint": "^8.1.0",
         "fork-ts-checker-webpack-plugin": "^6.5.0",
         "glob": "^7.2.0",
-        "gulp": "^4.0.2",
         "html-webpack-plugin": "^5.5.0",
         "less-loader": "^10.2.0",
         "mocha": "^9.1.3",
@@ -154,16 +167,17 @@
         "@loadable/component": "^5.15.2",
         "ansi-regex": "^6.0.1",
         "ansi-to-html": "^0.7.2",
+        "crypto": "^1.0.1",
         "fs-extra": "^10.0.0",
         "jsonc-parser": "^3.0.0",
         "less": "^4.1.2",
         "lodash": "^4.17.21",
         "log4js": "^6.3.0",
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2",
-        "react-redux": "^7.2.6",
+        "react": "^16.5.2",
+        "react-dom": "^16.5.2",
+        "react-redux": "^7.1.1",
         "redux-logger": "^3.0.6",
-        "rxjs": "^7.5.1",
+        "rxjs": "^6.5.4",
         "style-loader": "^3.3.1"
     }
 }

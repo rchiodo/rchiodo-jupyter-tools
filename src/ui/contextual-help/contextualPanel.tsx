@@ -5,7 +5,6 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { ContentPanel, IContentPanelProps } from '../common/contentPanel';
 import { ErrorBoundary } from '../common/errorBoundary';
-import { Progress } from '../common/progress';
 import { IStore } from '../common/redux/store';
 import { ICellViewModel, IMainState } from '../common/types';
 import { getConnectedContextualCell } from './contextualCell';
@@ -47,25 +46,16 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
                     <div className="styleSetter">
                         <style>{`${this.props.rootCss ? this.props.rootCss : ''}`}</style>
                     </div>
-                    <label className="inputLabel">
-                                {'Select a notebook to get contextual help.'}
-                    </label>
+                    <label className="inputLabel">{'Select a notebook to get contextual help.'}</label>
                 </div>
             );
         }
-        // Update the state controller with our new state
-        const progressBar = (this.props.busy || !this.props.loaded) ? <Progress /> : undefined;
         return (
             <div id="main-panel" role="Main" style={dynamicFont}>
                 <div className="styleSetter">
                     <style>{`${this.props.rootCss ? this.props.rootCss : ''}`}</style>
                 </div>
-                <header ref={this.mainPanelToolbarRef} id="main-panel-toolbar">
-                    {progressBar}
-                </header>
-                <main id="main-panel-content">
-                    {this.renderContentPanel(this.props.baseTheme)}
-                </main>
+                <main id="main-panel-content">{this.renderContentPanel(this.props.baseTheme)}</main>
             </div>
         );
     }

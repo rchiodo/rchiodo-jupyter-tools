@@ -40,10 +40,7 @@ function generateDefaultState(baseTheme: string): IMainState {
     };
 }
 
-function generateMainReducer<M>(
-    baseTheme: string,
-    reducerMap: M
-): Redux.Reducer<IMainState, QueuableAction<M>> {
+function generateMainReducer<M>(baseTheme: string, reducerMap: M): Redux.Reducer<IMainState, QueuableAction<M>> {
     // First create our default state.
     const defaultState = generateDefaultState(baseTheme);
 
@@ -52,17 +49,13 @@ function generateMainReducer<M>(
 }
 
 function createTestLogger() {
-    const logFileEnv = process.env.VSC_JUPYTER_WEBVIEW_LOG_FILE;
-    if (logFileEnv) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const log4js = require('log4js') as typeof import('log4js');
-        const logFilePath = logFileEnv;
-        log4js.configure({
-            appenders: { reduxLogger: { type: 'file', filename: logFilePath } },
-            categories: { default: { appenders: ['reduxLogger'], level: 'debug' } }
-        });
-        return log4js.getLogger();
-    }
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const log4js = require('log4js') as typeof import('log4js');
+    log4js.configure({
+        appenders: { reduxLogger: { type: 'file', filename: 'rchiodo-powertools-redux.log' } },
+        categories: { default: { appenders: ['reduxLogger'], level: 'debug' } }
+    });
+    return log4js.getLogger();
 }
 
 function createTestMiddleware(transformLoad: () => Promise<void>): Redux.Middleware<{}, IStore> {
@@ -77,8 +70,7 @@ function createTestMiddleware(transformLoad: () => Promise<void>): Redux.Middlew
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const sendMessage = (message: any, payload?: any) => {
             setTimeout(() => {
-                transformPromise
-                    .then(() => postActionToExtension({ queueAction: store.dispatch }, message, payload));
+                transformPromise.then(() => postActionToExtension({ queueAction: store.dispatch }, message, payload));
             });
         };
 
@@ -110,9 +102,7 @@ function createMiddleWare(
 
     // Create the logger if we're not in production mode or we're forcing logging
     const reduceLogMessage = '<payload too large to displayed in logs (at least on CI)>';
-    const actionsWithLargePayload = [
-        CssMessages.GetCssResponse,
-    ];
+    const actionsWithLargePayload = [CssMessages.GetCssResponse];
     const logger = createLogger({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         stateTransformer: (state: any) => {
@@ -144,22 +134,14 @@ function createMiddleWare(
         logger: testMode ? createTestLogger() : window.console
     });
 
-    // Environment variables only work in functional tests (browser doesn't have access to env). In order for logging to be present in
-    // development, you have to hardcode this
-    const loggerMiddleware =
-        process.env.VSC_JUPYTER_FORCE_LOGGING !== undefined && !process.env.VSC_JUPYTER_DS_NO_REDUX_LOGGING
-            ? logger
-            : undefined;
-    // logger;
+    const loggerMiddleware = logger;
 
     const results: Redux.Middleware<{}, IStore>[] = [];
     results.push(queueableActions);
     if (testMiddleware) {
         results.push(testMiddleware);
     }
-    if (loggerMiddleware) {
-        results.push(loggerMiddleware);
-    }
+    results.push(loggerMiddleware);
 
     return results;
 }
