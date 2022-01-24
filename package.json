@@ -113,9 +113,9 @@
     "scripts": {
         "package": "vsce package -o rchiodo-jupyter-tools.vsix",
         "vscode:prepublish": "npm run clean && npm run compile-webviews && npm run compile",
-        "compile": "webpack",
-        "compile-webviews-watch": "cross-env NODE_OPTIONS=--max_old_space_size=9096 webpack --config ./build/webpack/webpack.ui.config.js --watch",
-        "compile-webviews": "cross-env NODE_OPTIONS=--max_old_space_size=9096 webpack --config ./build/webpack/webpack.ui.config.js",
+        "compile": "webpack --config ./webpack.config.js",
+        "compile-webviews-watch": "webpack --config ./build/webpack/webpack.ui.config.js --watch",
+        "compile-webviews": "webpack --config ./build/webpack/webpack.ui.config.js",
         "watch": "webpack --watch",
         "clean": "del-cli dist/**",
         "compile-tests": "tsc -p . --outDir out",
