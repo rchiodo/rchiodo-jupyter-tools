@@ -55,6 +55,7 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
                 <div className="styleSetter">
                     <style>{`${this.props.rootCss ? this.props.rootCss : ''}`}</style>
                 </div>
+                <header>{this.renderHeader()}</header>
                 <main id="main-panel-content">{this.renderContentPanel(this.props.baseTheme)}</main>
             </div>
         );
@@ -78,6 +79,19 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
             scrollBeyondLastLine: false
         };
     };
+
+    private renderHeader() {
+        if (this.props.cellVMs && this.props.cellVMs.length > 0) {
+            return (
+                <div>
+                    <div>Code under cursor: {this.props.cellVMs[0].cell.data.source}</div>
+                    <hr />
+                </div>
+            );
+        } else {
+            return <div>Kernel must be started in order to get results</div>;
+        }
+    }
 
     private renderCell = (cellVM: ICellViewModel): JSX.Element | null => {
         return (

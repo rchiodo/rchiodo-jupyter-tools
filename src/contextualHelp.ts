@@ -34,9 +34,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
         return undefined;
     }
     constructor(provider: IWebviewViewProvider, private readonly statusProvider: StatusProvider) {
-        super(provider, (c, d) => new SimpleMessageListener(c, d), root, [
-            path.join(root, 'contextualHelp.js')
-        ]);
+        super(provider, (c, d) => new SimpleMessageListener(c, d), root, [path.join(root, 'contextualHelp.js')]);
 
         // Sign up if the active variable view notebook is changed, restarted or updated
         vscode.window.onDidChangeActiveNotebookEditor(this.activeEditorChanged, this, disposables);
@@ -51,8 +49,25 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
 
     public showHelp(editor: vscode.TextEditor) {
         // Compute the text for the inspect request
-        const range = editor.document.getWordRangeAtPosition(editor.selection.active);
-        const text = editor.document.getText(range);
+        const line = editor.document.lineAt(editor.selection.active.line).text;
+        // Find first quote, parenthesis or space to the left
+        let start = editor.selection.active.character;
+        let end = editor.selection.active.character + 1;
+        let startFound = false;
+        let endFound = false;
+        while (!startFound || !endFound) {
+            const startChar = start > 0 ? line[start - 1] : ' ';
+            const endChar = end < line.length ? line[end] : ' ';
+            startFound = /[\s\(\)\[\]'"]+/.test(startChar);
+            endFound = /[\s\(\)\[\]'"]+/.test(endChar);
+            if (!startFound) {
+                start--;
+            }
+            if (!endFound) {
+                end++;
+            }
+        }
+        const text = line.slice(start, end);
 
         // Make our inspect request
         this.inspect(text, editor.document);
@@ -190,7 +205,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
                     file: Identifiers.EmptyFileName,
                     line: 0,
                     state: CellState.finished,
-                    data: createCodeCell([''], [output])
+                    data: createCodeCell([code], [output])
                 };
                 cell.data.execution_count = 1;
 
@@ -203,7 +218,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
                     file: Identifiers.EmptyFileName,
                     line: 0,
                     state: CellState.finished,
-                    data: createCodeCell('')
+                    data: createCodeCell(code)
                 };
                 cell.data.execution_count = 1;
 

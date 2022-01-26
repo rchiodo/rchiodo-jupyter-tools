@@ -77,22 +77,15 @@ export namespace Helpers {
             // we won't actually update.
             const newVMs = [...arg.prevState.cellVMs];
 
-            // Live share has been disabled for now, see https://github.com/microsoft/vscode-python/issues/7972
-            // Check to see if our code still matches for the cell (in liveshare it might be updated from the other side)
-            // if (concatMultilineString(arg.prevState.cellVMs[index].cell.data.source) !== concatMultilineString(cell.data.source)) {
-
-            // Prevent updates to the source, as its possible we have recieved a response for a cell execution
-            // and the user has updated the cell text since then.
             const newVM: ICellViewModel = {
                 ...newVMs[index],
                 cell: {
                     ...newVMs[index].cell,
                     state: arg.payload.data.state,
                     data: {
-                        ...arg.payload.data.data,
-                        source: newVMs[index].cell.data.source
+                        ...arg.payload.data.data
                     }
-                },
+                }
             };
             newVMs[index] = newVM;
 
