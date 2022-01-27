@@ -140,6 +140,13 @@ html {
     display: grid;
 }
 
+.cell-header {
+    margin: 8px;
+    font-family: var(--vscode-editor-font-family);
+    font-weight: var(--vscode-editor-font-weight);
+    font-size: var(--vscode-editor-font-size);
+}
+
 .cell-result-container {
     width: 100%;
 }

@@ -179,6 +179,10 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
             return result;
         }
 
+        // Determine help level
+        const config = vscode.workspace.getConfiguration('jupyterExtras');
+        const detail_level = config.get('detailLevel', 'normal') === 'normal' ? 0 : 1;
+
         // Start a status item
         const status = this.setStatus('Executing code', false);
 
@@ -188,7 +192,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
 
             const result =
                 kernel && code && code.length > 0
-                    ? await kernel.connection.connection.requestInspect({ code, cursor_pos: 0, detail_level: 1 })
+                    ? await kernel.connection.connection.requestInspect({ code, cursor_pos: 0, detail_level })
                     : undefined;
             if (result && result.content.status === 'ok' && 'text/plain' in result.content.data) {
                 const output: nbformat.IStream = {
@@ -220,7 +224,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
                     state: CellState.finished,
                     data: createCodeCell(code)
                 };
-                cell.data.execution_count = 1;
+                cell.data.execution_count = kernel ? 1 : 0;
 
                 // Then send the combined output to the UI
                 this.sendCellsToWebView([cell]);
@@ -267,6 +271,9 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
                     const exports = extension.exports as JupyterAPI;
                     if (exports && (exports as any).getKernelService) {
                         this.kernelService = await exports.getKernelService();
+                        this.kernelService
+                            ?.getKernel(notebook)
+                            ?.connection.kernelSocket?.onDidChange(this.activeKernelChanged, this, disposables);
                         this.kernelService?.onDidChangeKernels(this.activeKernelChanged, this, disposables);
                     }
                 }

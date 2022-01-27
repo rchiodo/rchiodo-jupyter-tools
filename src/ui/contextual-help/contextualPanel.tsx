@@ -5,6 +5,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { ContentPanel, IContentPanelProps } from '../common/contentPanel';
 import { ErrorBoundary } from '../common/errorBoundary';
+import { Progress } from '../common/progress';
 import { IStore } from '../common/redux/store';
 import { ICellViewModel, IMainState } from '../common/types';
 import { getConnectedContextualCell } from './contextualCell';
@@ -50,12 +51,17 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
                 </div>
             );
         }
+        const progressBar = this.props.busy || !this.props.loaded ? <Progress /> : undefined;
+
         return (
             <div id="main-panel" role="Main" style={dynamicFont}>
                 <div className="styleSetter">
                     <style>{`${this.props.rootCss ? this.props.rootCss : ''}`}</style>
                 </div>
-                <header>{this.renderHeader()}</header>
+                <header ref={this.mainPanelToolbarRef} id="main-panel-toolbar">
+                    {progressBar}
+                    {this.renderHeader()}
+                </header>
                 <main id="main-panel-content">{this.renderContentPanel(this.props.baseTheme)}</main>
             </div>
         );
@@ -81,15 +87,34 @@ export class ContextualPanel extends React.Component<IContextualPanelProps> {
     };
 
     private renderHeader() {
-        if (this.props.cellVMs && this.props.cellVMs.length > 0) {
+        if (this.props.currentExecutionCount > 0 && this.props.cellVMs && this.props.cellVMs.length > 0) {
+            if (
+                Array.isArray(this.props.cellVMs[0].cell.data.outputs) &&
+                this.props.cellVMs[0].cell.data.outputs?.length > 0
+            ) {
+                return (
+                    <div>
+                        <div className="cell-header">Code under cursor: {this.props.cellVMs[0].cell.data.source}</div>
+                        <hr />
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                        <div className="cell-header">Code under cursor: {this.props.cellVMs[0].cell.data.source}</div>
+                        <hr />
+                        <div className="cell-header">No response from kernel</div>
+                    </div>
+                );
+            }
+        } else if (this.props.cellVMs && this.props.cellVMs.length > 0) {
             return (
                 <div>
-                    <div>Code under cursor: {this.props.cellVMs[0].cell.data.source}</div>
+                    <div className="cell-header">Code under cursor: {this.props.cellVMs[0].cell.data.source}</div>
                     <hr />
+                    <div className="cell-header">Kernel must be started in order to get results</div>
                 </div>
             );
-        } else {
-            return <div>Kernel must be started in order to get results</div>;
         }
     }
 

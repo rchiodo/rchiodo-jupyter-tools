@@ -94,20 +94,36 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "jupyter-extensions",
+                    "id": "jupyter",
                     "title": "Jupyter",
                     "icon": "$(notebook)"
                 }
             ]
         },
         "views": {
-            "jupyter-extensions": [
+            "jupyter": [
                 {
                     "type": "webview",
                     "id": "jupyterContextualHelp",
                     "name": "Contextual Help"
                 }
             ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "Jupyter Extras",
+            "properties": {
+                "jupyterExtras.detailLevel": {
+                    "type": "string",
+                    "default": "normal",
+                    "enum": [
+                        "normal",
+                        "verbose"
+                    ],
+                    "description": "Level of help to provide",
+                    "scope": "application"
+                }
+            }
         }
     },
     "scripts": {
