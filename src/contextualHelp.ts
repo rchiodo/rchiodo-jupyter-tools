@@ -39,6 +39,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
         // Sign up if the active variable view notebook is changed, restarted or updated
         vscode.window.onDidChangeActiveNotebookEditor(this.activeEditorChanged, this, disposables);
         vscode.window.onDidChangeTextEditorSelection(this.activeSelectionChanged, this, disposables);
+        vscode.window.onDidChangeNotebookEditorSelection(this.activeNotebookSelectionChanged, this, disposables);
     }
 
     // Used to identify this webview in telemetry, not shown to user so no localization
@@ -48,7 +49,13 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
     }
 
     public showHelp(editor: vscode.TextEditor) {
-        // Compute the text for the inspect request
+        // Code should be the entire cell
+        const code = editor.document.getText();
+
+        // Cursor position should be offset in that cell
+        const cursor_pos = editor.document.offsetAt(editor.selection.active);
+
+        // Word under cursor can be computed from the line
         const line = editor.document.lineAt(editor.selection.active.line).text;
         // Find first quote, parenthesis or space to the left
         let start = editor.selection.active.character;
@@ -67,10 +74,10 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
                 end++;
             }
         }
-        const text = line.slice(start, end);
+        const word = line.slice(start, end);
 
         // Make our inspect request
-        this.inspect(text, editor.document);
+        this.inspect(code, cursor_pos, word, editor.document);
     }
 
     public async load(codeWebview: vscode.WebviewView) {
@@ -172,7 +179,12 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
         return result;
     };
 
-    protected async inspect(code: string, document: vscode.TextDocument): Promise<boolean> {
+    protected async inspect(
+        code: string,
+        cursor_pos: number,
+        word: string,
+        document: vscode.TextDocument
+    ): Promise<boolean> {
         let result = true;
         // Skip if notebook not set
         if (!this.owningResource) {
@@ -192,7 +204,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
 
             const result =
                 kernel && code && code.length > 0
-                    ? await kernel.connection.connection.requestInspect({ code, cursor_pos: 0, detail_level })
+                    ? await kernel.connection.connection.requestInspect({ code, cursor_pos, detail_level })
                     : undefined;
             if (result && result.content.status === 'ok' && 'text/plain' in result.content.data) {
                 const output: nbformat.IStream = {
@@ -209,7 +221,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
                     file: Identifiers.EmptyFileName,
                     line: 0,
                     state: CellState.finished,
-                    data: createCodeCell([code], [output])
+                    data: createCodeCell([word], [output])
                 };
                 cell.data.execution_count = 1;
 
@@ -222,7 +234,7 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
                     file: Identifiers.EmptyFileName,
                     line: 0,
                     state: CellState.finished,
-                    data: createCodeCell(code)
+                    data: createCodeCell(word)
                 };
                 cell.data.execution_count = kernel ? 1 : 0;
 
@@ -250,6 +262,18 @@ export class ContextualHelp extends WebviewViewHost<MessageMapping> implements v
             this.showHelp(e.textEditor);
         }
     }
+
+    private async activeNotebookSelectionChanged(e: vscode.NotebookEditorSelectionChangeEvent) {
+        // Find the matching text editor for the cell we just switched to
+        const cell = e.notebookEditor.document.cellAt(e.selections[0].start);
+        if (cell) {
+            const editor = vscode.window.visibleTextEditors.find((e) => e.document === cell.document);
+            if (editor) {
+                this.showHelp(editor);
+            }
+        }
+    }
+
     private async activeKernelChanged() {
         // Show help right now if the active text editor is a notebook cell
         if (vscode.window.activeTextEditor && isNotebookCell(vscode.window.activeTextEditor.document)) {
